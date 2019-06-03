@@ -1,0 +1,21 @@
+#!/bin/bash
+
+__import_visited=()
+
+function import_module {
+    for visited in ${__import_visited[@]}; do
+        if [[ $1 == $visited ]]; then
+            return
+        fi
+    done
+
+    module_path="$IGNITE_INSTALLATION/modules/$1"
+
+    if [ -f "$module_path" ]; then
+        . "$module_path"
+        __import_visited+=("$1")
+    else
+        echo "Ignite module '$1' does not exist" >&2
+        return 1
+    fi
+}
