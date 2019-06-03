@@ -1,10 +1,13 @@
 #!/bin/bash
 set -e
-
-# Set up import module
 IGNITE_INSTALLATION=${IGNITE_INSTALLATION:-$(dirname $(readlink $(which $0) || echo $(which $0)))}
+if [ ! -d "$IGNITE_INSTALLATION" ]; then
+    echo '\033[31mfatal: ignite incorrectly configured' >&2
+    echo '\033[31mfatal: $IGNITE_INSTALLATION variable does not reference an Ignite installation' >&2
+    exit 1
+fi
 . $IGNITE_INSTALLATION/modules/import
-
+_ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 ################################################################################
 # Behavoural
 ################################################################################
@@ -88,4 +91,5 @@ VALID_OPERATIONS=${VALID_OPERATIONS:-()}
 SOURCE_PATH=${SOURCE_PATH:-"."}
 
 # Execute main function
+echo -e "\033[1mIgnite $_ignite_version - Kevin Hira\033[0m"
 main "$@"
