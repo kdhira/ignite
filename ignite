@@ -52,7 +52,7 @@ set -e
             shift
         fi
         echo -e -n "$color$@$CLRT$new_line"
-}
+    }
 }
 
 { # COLOURS
@@ -76,42 +76,6 @@ set -e
     MAGENTA_BG="\033[45m"
     CYAN_BG="\033[46m"
     WHITE_BG="\033[47m"
-}
-
-{ # IGNITE OPERATIONS
-    IGNITE_VALID_OPERATIONS=(
-        "standalone ignite_script"
-        "commands"
-    )
-
-    function ignite_op_standalone {
-        force_overwrite=false
-        if [[ "$1" == "-f" ]]; then
-            force_overwrite=true
-            shift
-        fi
-        out_file="$1_standalone"
-        if [ -f "$out_file" ] && [[ "$force_overwrite" == "false" ]]; then
-            echo "Not writing to $out_file, already exists" >&2
-            exit 1
-        fi
-        cat "$1" > $out_file
-        echo >> $out_file
-        echo "#### STANDALONE GUARD" >> $out_file
-        echo "IGNITE_STANDALONE=true" >> $out_file
-        echo "#### STANDALONE GAURD" >> $out_file
-        echo >> $out_file
-        cat "$0" >> $out_file
-        return 0
-    }
-
-    function ignite_op_commands {
-        for op in "${IGNITE_VALID_OPERATIONS[@]}"; do
-            op=(${op[@]})
-            op_base=${op[0]}
-            echo $op_base
-        done
-    }
 }
 
 { # EXECUTION
@@ -146,20 +110,6 @@ set -e
                 exit $?
             fi
         done
-
-        # If ignite-defined operation
-        for op in "${IGNITE_VALID_OPERATIONS[@]}"; do
-            op=(${op[@]})
-            if [[ "$base" == "${op[0]}" ]]; then
-                if [ ! -d "$SOURCE_PATH" ]; then
-                    echo "$SOURCE_PATH does not exist" >&2
-                    exit 1
-                fi
-                cd $SOURCE_PATH
-                ignite_op_$base "$@"
-                exit $?
-            fi
-        done
         # Didnt hit a registered operation
         case "$base" in
             help)
@@ -180,25 +130,23 @@ set -e
 ################################################################################
 
 # Take and import implementation
-if [[ "$IGNITE_STANDALONE" != "true" ]] && ! type op_$1 &> /dev/null && ! type ignite_op_$1 &> /dev/null; then
-    if [[ $# -eq 0 ]] || [ -z "$1" ]; then
-        echo "Usage: $0 {script} {command}" >&2
-        exit 1
-    fi
-    if [ -f "$1" ] || [ -L "$1" ]; then
-        CONF_FILE="$1"
-        . "$CONF_FILE"
-        FALLBACK_NAME=$(basename $CONF_FILE)
-        shift
-    elif [ -f "$(dirname $0)/ignite_$1" ] || [ -L "$(dirname $0)/ignite_$1" ]; then
-        CONF_FILE="$(dirname $0)/ignite_$1"
-        . "$CONF_FILE"
-        FALLBACK_NAME=$(basename $CONF_FILE)
-        shift
-    else
-        echo "Ignite script does not exist" >&2
-        exit 1
-    fi
+if [[ $# -eq 0 ]] || [ -z "$1" ]; then
+    echo "Usage: $0 {script} {command}" >&2
+    exit 1
+fi
+if [ -f "$1" ] || [ -L "$1" ]; then
+    CONF_FILE="$1"
+    . "$CONF_FILE"
+    FALLBACK_NAME=$(basename $CONF_FILE)
+    shift
+elif [ -f "$(dirname $0)/ignite_$1" ] || [ -L "$(dirname $0)/ignite_$1" ]; then
+    CONF_FILE="$(dirname $0)/ignite_$1"
+    . "$CONF_FILE"
+    FALLBACK_NAME=$(basename $CONF_FILE)
+    shift
+else
+    echo "Ignite script does not exist" >&2
+    exit 1
 fi
 
 APP_NAME=${APP_NAME:-$FALLBACK_NAME}
