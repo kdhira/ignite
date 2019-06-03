@@ -1,0 +1,16 @@
+#!/bin/bash
+
+import_module colors
+
+# TODO: Improve implementation
+
+function log {
+    color="$1"
+    shift
+    lf="\n"
+    if [[ "$1" == "-n" ]]; then
+        lf=
+        shift
+    fi
+    echo -en "${color}$@${CLRT}${lf}"
+}

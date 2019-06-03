@@ -1,0 +1,29 @@
+#!/bin/bash
+
+function write_env {
+    ENV_FILE=$1
+    ENV_BUILD_FUNCTION=$2
+    echo "Writing env '$ENV_FILE'"
+    echo '#!/bin/sh' > "$ENV_FILE"
+    function add_to_env {
+        echo "  Adding '$1' to env"
+        echo "export $1=\"$2\"" >> "$ENV_FILE"
+    }
+    $ENV_BUILD_FUNCTION
+    echo "Finished writing env"
+}
+
+function template_var {
+    echo "Filling variable '$2' in '$1'"
+    val="${3//\//\\/}"
+    sed -i'.sed' -e "s/\$$2/$val/g" "$TMP_DIR/$1"
+}
+
+function deploy_file {
+    echo "Copying file: '$1' -> '$2'"
+    cp -rf "$TMP_DIR/$1" "$2"
+}
+
+function own_file {
+    chown -R "$1:$1" "$2"
+}
