@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: This really needs a redo!
+
 function _ignite_completion {
     # Look for files:
     # Any files where ignite is installed or in current directory with prefix "ignite_"
