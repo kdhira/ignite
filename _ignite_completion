@@ -1,0 +1,123 @@
+#!/bin/bash
+
+function _ignite_completion {
+    # Look for files:
+    # Any files where ignite is installed or in current directory with prefix "ignite_"
+    if [[ ${#COMP_WORDS[@]} -eq 2 ]]; then
+        smart_files=($(ls $(dirname $(which ${COMP_WORDS[0]}))/ignite_* 2>/dev/null))
+        smart_files_base=()
+        for f in "${smart_files[@]}"; do
+            smart_files_base+=("$(basename $f | cut -d'_' -f2)")
+        done
+
+        wd_files=("$(ls ignite_* 2> /dev/null)")
+        tmp=
+        wd_files_array=()
+        for f in ${wd_files[@]}; do
+            tmp="$(echo $tmp $f)"
+            if [ -f "$tmp" -o -L "$tmp" ]; then
+                if [[ "$(head -1 $tmp)" == '#!/bin/bash' ]]; then
+                    wd_files_array+=("$tmp")
+                fi
+            fi
+            if [ -e "$tmp" ]; then
+                tmp=""
+            fi
+
+        done
+
+        # for op in "$(ignite commands)"; do
+        #     op=(${op[a]})
+        #     op_base=${op[0]}
+        #     if [[ "$op_base" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
+        #         COMPREPLY+=($op_base)
+        #     fi
+        # done
+
+        ignite_commands=($(ignite commands))
+        reply=(${smart_files_base[@]} ${wd_files_array[@]} ${ignite_commands[@]})
+        for op in "${reply[@]}"; do
+            # echo $op
+            if [[ "$op" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
+                COMPREPLY+=($op)
+            fi
+        done
+
+        return
+
+    fi
+
+    # Get valid completion commands if file exists
+    if [[ ${#COMP_WORDS[@]} -eq 3 ]]; then
+        ignite_commands=($(ignite commands))
+        for op in "${ignite_commands[@]}"; do
+            if [[ "${COMP_WORDS[1]}" == "$op" ]]; then
+                # file_lookup ${COMP_WORDS[COMP_CWORD]} 2> /dev/null
+                return
+            fi
+        done
+
+        if ! which ignite &> /dev/null; then
+            return
+        fi
+        base="$(dirname $(which ignite))"
+        if [ -f "${COMP_WORDS[1]}" ] || [ -L "${COMP_WORDS[1]}" ]; then
+            CONF_FILE="${COMP_WORDS[1]}"
+            . "$CONF_FILE"
+        elif [ -f "$base/ignite_${COMP_WORDS[1]}" ] || [ -L "$base/ignite_${COMP_WORDS[1]}" ]; then
+            CONF_FILE="$base/ignite_${COMP_WORDS[1]}"
+            . "$CONF_FILE"
+        fi
+
+        if [ -z "$CONF_FILE" ]; then
+            return
+        fi
+
+        for op in "${VALID_OPERATIONS[@]}"; do
+            op=($op)
+            op_base=${op[0]}
+            if [[ "$op_base" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
+                COMPREPLY+=($op_base)
+            fi
+        done
+
+        return
+
+    fi
+    if [[ ${#COMP_WORDS[@]} -gt 3 ]]; then
+        # file_lookup ${COMP_WORDS[COMP_CWORD]} 2> /dev/null
+        return
+    fi
+}
+
+function file_lookup {
+    search="$1"
+    dir="$1"
+    if [ ! -z "$dir" ] && [[ "$dir" != */ ]]; then
+        echo "Rolling back"
+        dir="$(dirname $dir)"
+    fi
+
+    # files=("$(ls $dir)")
+    # for file in ${files[@]}; do
+    #     echo $file
+    #     if [[ "$file" == "$search"* ]]; then
+    #         echo "YES $file"
+    #     fi
+    # done
+
+    wd_files=("$(ls -p $dir 2> /dev/null)")
+    tmp=
+    wd_files_array=()
+    for f in ${wd_files[@]}; do
+        tmp="$(echo $tmp $f)"
+        if [ -e "$tmp" ]; then
+            if [[ "$tmp" == $search* ]]; then
+                COMPREPLY+=("$tmp")
+            fi
+            tmp=
+        fi
+    done
+}
+
+complete -f -F _ignite_completion ignite

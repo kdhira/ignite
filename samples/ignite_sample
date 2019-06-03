@@ -1,0 +1,24 @@
+#!/bin/sh
+
+APP_NAME='sample'
+LATEST_VERSION='1.0.0-SNAPSHOT'
+
+[ -f "${APP_NAME}_env" ] && . "${APP_NAME}_env"
+
+VERSION=${VERSION:-$LATEST_VERSION}
+
+
+VALID_OPERATIONS=(
+    "info"
+    "install"
+)
+
+
+function op_info {
+    echo -e "${GREEN_FG}Hi I am $APP_NAME@$VERSION${CLRT}"
+}
+
+
+function op_install {
+    echo "Installing $APP_NAME"
+}

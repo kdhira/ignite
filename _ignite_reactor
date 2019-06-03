@@ -1,0 +1,20 @@
+#!/bin/bash
+
+function _reactor_pipeline {
+    if [[ $_reactor_no_deps != true ]]; then
+        for visited in ${__pipeline_visited[@]}; do
+            if [[ $2 == $visited ]]; then
+                return
+            fi
+        done
+        for r in "${_reactor[@]}"; do
+            reactor_dependency=($r)
+            if [[ $2 == ${reactor_dependency[0]} ]]; then
+                _reactor_pipeline $1 ${reactor_dependency[1]}
+            fi
+        done
+    fi
+
+    $1$2 # 2>&1 | sed "s/^/$2: /g"
+    __pipeline_visited+=($2)
+}
