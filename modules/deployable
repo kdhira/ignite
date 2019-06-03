@@ -1,6 +1,8 @@
 #!/bin/bash
 
-VALID_OPERATIONS+=(
+import_module reactor
+
+_reactor_tasks=(
     "clean"
     "resources"
     "build"
@@ -9,73 +11,13 @@ VALID_OPERATIONS+=(
     "deploy"
 )
 
-import_module reactor
-_reactor=(
+_reactor_chain=(
     "build resources"
     "install build"
     "push install"
     "deploy push"
 )
 
-{
-    function _deployable_ {
-        return
-    }
-
-    function _deployable_clean {
-        echo "Nothing to do"
-    }
-
-    function _deployable_resources {
-        echo "Nothing to do"
-    }
-
-    function _deployable_build {
-        echo "Nothing to do"
-    }
-
-    function _deployable_install {
-        echo "Nothing to do"
-    }
-
-    function _deployable_push {
-        echo "Nothing to do"
-    }
-
-    function _deployable_deploy {
-        echo "Nothing to do"
-    }
-}
-
-# op_ commands
-{
-    function op_clean {
-        _deployable_ $@
-        _reactor_pipeline _deployable_ clean
-    }
-
-    function op_resources {
-        _deployable_ $@
-        _reactor_pipeline _deployable_ resources
-    }
-
-    function op_build {
-        _deployable_ $@
-        _reactor_pipeline _deployable_ build
-    }
-
-    function op_install {
-        _deployable_ $@
-        _reactor_pipeline _deployable_ install
-    }
-
-    function op_push {
-        _deployable_ $@
-        _reactor_pipeline _deployable_ push
-    }
-
-    function op_deploy {
-        _deployable_ $@
-        _reactor_pipeline _deployable_ deploy
-    }
+function initialize_deployable {
+    initialize_reactor
 }
