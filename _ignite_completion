@@ -3,6 +3,8 @@
 # TODO: This really needs a redo!
 
 function _ignite_completion {
+
+    . $IGNITE_INSTALLATION/modules/import
     # Look for files:
     # Any files where ignite is installed or in current directory with prefix "ignite_"
     if [[ ${#COMP_WORDS[@]} -eq 2 ]]; then
@@ -36,8 +38,8 @@ function _ignite_completion {
         #     fi
         # done
 
-        ignite_commands=($(ignite commands))
-        reply=(${smart_files_base[@]} ${wd_files_array[@]} ${ignite_commands[@]})
+        # ignite_commands=($(ignite commands))
+        reply=(${smart_files_base[@]} ${wd_files_array[@]})
         for op in "${reply[@]}"; do
             # echo $op
             if [[ "$op" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
@@ -51,13 +53,13 @@ function _ignite_completion {
 
     # Get valid completion commands if file exists
     if [[ ${#COMP_WORDS[@]} -eq 3 ]]; then
-        ignite_commands=($(ignite commands))
-        for op in "${ignite_commands[@]}"; do
-            if [[ "${COMP_WORDS[1]}" == "$op" ]]; then
-                # file_lookup ${COMP_WORDS[COMP_CWORD]} 2> /dev/null
-                return
-            fi
-        done
+        # ignite_commands=($(ignite commands))
+        # for op in "${ignite_commands[@]}"; do
+        #     if [[ "${COMP_WORDS[1]}" == "$op" ]]; then
+        #         # file_lookup ${COMP_WORDS[COMP_CWORD]} 2> /dev/null
+        #         return
+        #     fi
+        # done
 
         if ! which ignite &> /dev/null; then
             return
