@@ -8,7 +8,7 @@ function _reactor_start {
 }
 
 function __reactor_pipeline {
-    if [[ $_reactor_no_deps != true ]]; then
+    if [[ $_reactor_dependency_override != true ]]; then
         for visited in ${__pipeline_visited[@]}; do
             if [[ $2 == $visited ]]; then
                 return
@@ -21,6 +21,7 @@ function __reactor_pipeline {
             fi
         done
     fi
+
     reactor_$1
     __pipeline_visited+=($1)
 }
