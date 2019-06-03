@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. _ignite_colors
+import_module colors
 
 # TODO: Improve implementation
 

@@ -9,7 +9,7 @@ VALID_OPERATIONS+=(
     "deploy"
 )
 
-. _ignite_reactor
+import_module reactor
 _reactor=(
     "build resources"
     "install build"
