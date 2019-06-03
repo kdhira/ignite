@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# 1=switch (string)
+# 2=output_variable_name (string)
+# 3=shifter (int)
+arguments_config=()
+
+_arguments_allow_switchless=false
+
+function arguments_parse {
+    while [[ $# -gt 0 ]]; do
+        _found=false
+        for arg in "${arguments_config[@]}"; do
+            a=($arg)
+            switch="${a[0]}"
+            output_var="${a[1]}"
+            shifter="${a[2]}"
+
+            if  [[ ! "$1" =~ --* ]]; then
+                if [[ $_arguments_allow_switchless == true ]]; then
+                    _arguments_switchless=($@)
+                    return
+                else
+                    error_invalid $1
+                    return 1
+                fi
+            fi
+
+            if [[ "$1" == "--$switch" ]]; then
+                _found=true
+                if [[ $shifter -eq 0 ]]; then
+                    if [[  "$1" == "--$switch" ]]; then
+                        eval "$output_var=true"
+                    else
+                        eval "$output_var=false"
+                    fi
+                elif [[ $shifter -eq 1 ]]; then
+                    eval "$output_var=$2"
+                elif [[ $shifter -eq -1 ]]; then
+                    shifter=$#
+                    shifter=$((shifter-1))
+                    eval "$output_var=(\"${@:2}\")"
+                else
+                    eval "$output_var=(\"${@:2:$shifter}\")"
+                fi
+
+                shift $((shifter+1))
+                break
+            elif [[ $shifter -eq 0 ]] && [[ "$1" == --no-"$switch" ]]; then
+                _found=true
+                eval "$output_var=false"
+                shift 1
+                break
+            fi
+        done
+
+        if [[ $_found == false ]]; then
+            if [[ $_arguments_allow_switchless == true ]]; then
+                _arguments_switchless=($@)
+                return
+            else
+                error_invalid $1
+                return 1
+            fi
+        fi
+    done
+}
+
+function error_invalid {
+    echo "Invalid argument $1" >&2
+    return 1
+}
