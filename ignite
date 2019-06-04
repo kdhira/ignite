@@ -22,7 +22,7 @@ function usage {
     fi
     echo "Usage:"
     for op in "${VALID_OPERATIONS[@]}"; do
-        echo -e "\t$0 $CONF_FILE $op"
+        echo -e "\t$0 $_ignite_script_name $op"
     done
 }
 
@@ -31,30 +31,31 @@ function main {
         usage
         exit 1
     fi
-    base="$1"
+    command="$1"
     shift
 
     # See if implementation-defined operation
     for op in "${VALID_OPERATIONS[@]}"; do
         op=(${op[@]})
-        if [[ "$base" == "${op[0]}" ]]; then
+        if [[ "$command" == "${op[0]}" ]]; then
             if [ ! -d "$SOURCE_PATH" ]; then
                 echo "$SOURCE_PATH does not exist" >&2
                 exit 1
             fi
             cd $SOURCE_PATH
-            op_$base "$@"
+            echo -e "\033[1mExecuting $_ignite_script_name->$command\033[0m"
+            op_$command "$@"
             exit $?
         fi
     done
     # Didnt hit a registered operation
-    case "$base" in
+    case "$command" in
         help)
             usage
             exit $?
             ;;
         *)
-            echo "Unknown command '$base'"
+            echo "Unknown command '$command'"
             usage
             exit 1
             ;;
@@ -65,31 +66,25 @@ function main {
 ################################################################################
 # Functional
 ################################################################################
+echo -e "\033[1mIgnite $_ignite_version - Kevin Hira\033[0m"
 
-# Take and import implementation
-if [[ $# -eq 0 ]] || [ -z "$1" ]; then
+if [[ $# -eq 0 ]]; then
     echo "Usage: $0 {script} {command}" >&2
     exit 1
 fi
-if [ -f "$1" ] || [ -L "$1" ]; then
-    CONF_FILE="$1"
-    . "$CONF_FILE"
-    FALLBACK_NAME=$(basename $CONF_FILE)
-    shift
-elif [ -f "$(dirname $0)/ignite_$1" ] || [ -L "$(dirname $0)/ignite_$1" ]; then
-    CONF_FILE="$(dirname $0)/ignite_$1"
-    . "$CONF_FILE"
-    FALLBACK_NAME=$(basename $CONF_FILE)
-    shift
-else
-    echo "Ignite script does not exist" >&2
-    exit 1
-fi
 
+. $IGNITE_INSTALLATION/_ignite_search
+_ignite_script_path=$(resolve_script $1) || {
+    echo "Could not resolve script \"$1\""
+    exit 2
+}
+_ignite_script_name="$1"
+shift
+
+. "$_ignite_script_path"
 
 VALID_OPERATIONS=${VALID_OPERATIONS:-()}
 SOURCE_PATH=${SOURCE_PATH:-"."}
 
 # Execute main function
-echo -e "\033[1mIgnite $_ignite_version - Kevin Hira\033[0m"
 main "$@"

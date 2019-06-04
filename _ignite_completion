@@ -1,127 +1,29 @@
 #!/bin/bash
 
-# TODO: This really needs a redo!
 
-function _ignite_completion {
-
-    . $IGNITE_INSTALLATION/modules/import
-    # Look for files:
-    # Any files where ignite is installed or in current directory with prefix "ignite_"
-    if [[ ${#COMP_WORDS[@]} -eq 2 ]]; then
-        smart_files=($(ls $(dirname $(which ${COMP_WORDS[0]}))/ignite_* 2>/dev/null))
-        smart_files_base=()
-        for f in "${smart_files[@]}"; do
-            smart_files_base+=("$(basename $f | cut -d'_' -f2)")
+# May need further improvements, see #1
+_complete_script_location=$(dirname $(readlink $_ || echo $_))
+. "$_complete_script_location/_ignite_search"
+. "$_complete_script_location/modules/import"
+function _ignite_complete {
+    COMPREPLY=()
+    if [[ ${#COMP_WORDS[@]} -eq 1 ]] || [[ ${#COMP_WORDS[@]} -eq 2 ]] && [[ ${COMP_CWORD} -eq 1 ]]; then
+        search_scripts
+        for s in "${_script_map[@]}"; do
+            s=($s)
+            COMPREPLY+=("${s[0]}")
         done
-
-        wd_files=("$(ls ignite_* 2> /dev/null)")
-        tmp=
-        wd_files_array=()
-        for f in ${wd_files[@]}; do
-            tmp="$(echo $tmp $f)"
-            if [ -f "$tmp" -o -L "$tmp" ]; then
-                if [[ "$(head -1 $tmp)" == '#!/bin/bash' ]]; then
-                    wd_files_array+=("$tmp")
-                fi
-            fi
-            if [ -e "$tmp" ]; then
-                tmp=""
-            fi
-
-        done
-
-        # for op in "$(ignite commands)"; do
-        #     op=(${op[a]})
-        #     op_base=${op[0]}
-        #     if [[ "$op_base" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
-        #         COMPREPLY+=($op_base)
-        #     fi
-        # done
-
-        # ignite_commands=($(ignite commands))
-        reply=(${smart_files_base[@]} ${wd_files_array[@]})
-        for op in "${reply[@]}"; do
-            # echo $op
-            if [[ "$op" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
-                COMPREPLY+=($op)
-            fi
-        done
-
-        return
-
-    fi
-
-    # Get valid completion commands if file exists
-    if [[ ${#COMP_WORDS[@]} -eq 3 ]]; then
-        # ignite_commands=($(ignite commands))
-        # for op in "${ignite_commands[@]}"; do
-        #     if [[ "${COMP_WORDS[1]}" == "$op" ]]; then
-        #         # file_lookup ${COMP_WORDS[COMP_CWORD]} 2> /dev/null
-        #         return
-        #     fi
-        # done
-
-        if ! which ignite &> /dev/null; then
+    elif [[ ${#COMP_WORDS[@]} -eq 2 ]] || [[ ${#COMP_WORDS[@]} -eq 3 ]] && [[ ${COMP_CWORD} -eq 2 ]]; then
+        _ignite_script_path=$(resolve_script ${COMP_WORDS[1]}) || {
             return
-        fi
-        base="$(dirname $(which ignite))"
-        if [ -f "${COMP_WORDS[1]}" ] || [ -L "${COMP_WORDS[1]}" ]; then
-            CONF_FILE="${COMP_WORDS[1]}"
-            . "$CONF_FILE"
-        elif [ -f "$base/ignite_${COMP_WORDS[1]}" ] || [ -L "$base/ignite_${COMP_WORDS[1]}" ]; then
-            CONF_FILE="$base/ignite_${COMP_WORDS[1]}"
-            . "$CONF_FILE"
-        fi
+        }
+        . "$_ignite_script_path"
 
-        if [ -z "$CONF_FILE" ]; then
-            return
-        fi
-
-        for op in "${VALID_OPERATIONS[@]}"; do
-            op=($op)
-            op_base=${op[0]}
-            if [[ "$op_base" == ${COMP_WORDS[COMP_CWORD]}* ]]; then
-                COMPREPLY+=($op_base)
-            fi
+        for v in "${VALID_OPERATIONS[@]}"; do
+            v=($v)
+            COMPREPLY+=("${v[0]}")
         done
-
-        return
-
-    fi
-    if [[ ${#COMP_WORDS[@]} -gt 3 ]]; then
-        # file_lookup ${COMP_WORDS[COMP_CWORD]} 2> /dev/null
-        return
     fi
 }
 
-function file_lookup {
-    search="$1"
-    dir="$1"
-    if [ ! -z "$dir" ] && [[ "$dir" != */ ]]; then
-        echo "Rolling back"
-        dir="$(dirname $dir)"
-    fi
-
-    # files=("$(ls $dir)")
-    # for file in ${files[@]}; do
-    #     echo $file
-    #     if [[ "$file" == "$search"* ]]; then
-    #         echo "YES $file"
-    #     fi
-    # done
-
-    wd_files=("$(ls -p $dir 2> /dev/null)")
-    tmp=
-    wd_files_array=()
-    for f in ${wd_files[@]}; do
-        tmp="$(echo $tmp $f)"
-        if [ -e "$tmp" ]; then
-            if [[ "$tmp" == $search* ]]; then
-                COMPREPLY+=("$tmp")
-            fi
-            tmp=
-        fi
-    done
-}
-
-complete -f -F _ignite_completion ignite
+complete -F _ignite_complete -o default ignite
