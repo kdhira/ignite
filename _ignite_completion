@@ -23,8 +23,6 @@ function _ignite_complete {
             v=($v)
             COMPREPLY+=("${v[0]}")
         done
-    # else
-    #     # COMPREPLY=("$(compgen -d)")
     fi
 }
 
