@@ -1,6 +1,7 @@
 #!/bin/bash
 
-IGNITE_SEARCHBASE=(
+IGNITE_SEARCHBASE+=(
+    "$(pwd)"
     "$IGNITE_INSTALLATION"
 )
 
@@ -34,11 +35,9 @@ function resolve_script {
     _init_searchbase
     for p in "${_search_base[@]}"; do
         if [ -f "$p/ignite_$1" ] || [ -L "$p/ignite_$1" ]; then
-            echo "$(dirname $p/ignite_$1)"
+            echo "$p/ignite_$1"
             return 0
         fi
     done
     return 1
 }
-
-search
