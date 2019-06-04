@@ -1,13 +1,10 @@
 #!/bin/bash
 
-IGNITE_SEARCHBASE+=(
-    "$(pwd)"
-    "$IGNITE_INSTALLATION"
-)
-
 function _init_searchbase {
     _script_map=()
-    _search_base=(${IGNITE_SEARCHBASE[@]})
+    _search_base=("$(pwd)")
+    _search_base+=("$IGNITE_PATH")
+    _search_base+=("$IGNITE_INSTALLATION")
     IFS=$':' _paths=($PATH)
     unset IFS
 
@@ -16,7 +13,6 @@ function _init_searchbase {
 
 function search_scripts {
     _init_searchbase
-    _script_map=()
     for p in "${_search_base[@]}"; do
         if `ls $p/ignite_* &> /dev/null`; then
             for _match in `ls $p/ignite_*`; do
