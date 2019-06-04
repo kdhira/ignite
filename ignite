@@ -43,6 +43,7 @@ function main {
                 exit 1
             fi
             cd $SOURCE_PATH
+            echo -e "\033[1mExecuting $_ignite_script_name->$command\033[0m"
             op_$command "$@"
             exit $?
         fi
