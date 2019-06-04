@@ -3,12 +3,16 @@
 function _init_searchbase {
     _script_map=()
     _search_base=("$(pwd)")
-    _search_base+=("$IGNITE_PATH")
-    _search_base+=("$IGNITE_INSTALLATION")
-    IFS=$':' _paths=($PATH)
-    unset IFS
 
-    _search_base+=("${_paths[@]}")
+    IFS=$':' _custom_path=($IGNITE_PATH)
+    unset IFS
+    _search_base+=("${_custom_path[@]}")
+
+    _search_base+=("$IGNITE_INSTALLATION")
+
+    IFS=$':' _path=($PATH)
+    unset IFS
+    _search_base+=("${_path[@]}")
 }
 
 function search_scripts {
