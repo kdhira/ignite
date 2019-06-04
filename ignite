@@ -31,30 +31,30 @@ function main {
         usage
         exit 1
     fi
-    base="$1"
+    command="$1"
     shift
 
     # See if implementation-defined operation
     for op in "${VALID_OPERATIONS[@]}"; do
         op=(${op[@]})
-        if [[ "$base" == "${op[0]}" ]]; then
+        if [[ "$command" == "${op[0]}" ]]; then
             if [ ! -d "$SOURCE_PATH" ]; then
                 echo "$SOURCE_PATH does not exist" >&2
                 exit 1
             fi
             cd $SOURCE_PATH
-            op_$base "$@"
+            op_$command "$@"
             exit $?
         fi
     done
     # Didnt hit a registered operation
-    case "$base" in
+    case "$command" in
         help)
             usage
             exit $?
             ;;
         *)
-            echo "Unknown command '$base'"
+            echo "Unknown command '$command'"
             usage
             exit 1
             ;;
