@@ -1,0 +1,38 @@
+#!/bin/bash
+
+_reactor_tasks=()
+_reactor_chain=()
+
+function _reactor_start {
+    return
+}
+
+function __reactor_pipeline {
+    if [[ $_reactor_dependency_override != true ]]; then
+        for visited in ${__pipeline_visited[@]}; do
+            if [[ $2 == $visited ]]; then
+                return
+            fi
+        done
+        for r in "${_reactor_chain[@]}"; do
+            reactor_dependency=($r)
+            if [[ $1 == ${reactor_dependency[0]} ]]; then
+                __reactor_pipeline ${reactor_dependency[1]}
+            fi
+        done
+    fi
+
+    reactor_$1
+    __pipeline_visited+=($1)
+}
+
+function initialize_reactor {
+    for task in ${_reactor_tasks[@]}; do
+        eval "function op_$task {
+            _reactor_start $task "'$@'"
+            __reactor_pipeline $task
+        }"
+
+        VALID_OPERATIONS+=("$task")
+    done
+}
