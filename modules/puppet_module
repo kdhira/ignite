@@ -6,16 +6,16 @@ _puppet_module_file=${_puppet_module_file}
 
 function _puppet_module_build {
     pushd $_puppet_module_location > /dev/null
-    log $CYAN_FG "Building puppet module"
+    print_info "Building puppet module"
 
     _puppet_module_validate
 
     bundle exec puppet module build --modulepath .
     if [ ! -f "$_puppet_module_output_dir/$_puppet_module_file" ]; then
-        log $RED_FG "Module build reported successful, but build artifact does not exist"
+        print_error "Module build reported successful, but build artifact does not exist"
         return 1
     fi
-    log $GREEN_FG "Module build successful"
+    print_success "Module build successful"
     popd > /dev/null
 }
 
