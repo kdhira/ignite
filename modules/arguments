@@ -16,7 +16,7 @@ function arguments_parse {
             output_var="${a[1]}"
             shifter="${a[2]}"
 
-            if  [[ ! "$1" =~ --* ]]; then
+            if  [[ "$1" != -* ]]; then
                 if [[ $_arguments_allow_switchless == true ]]; then
                     _arguments_switchless=($@)
                     return
@@ -26,14 +26,10 @@ function arguments_parse {
                 fi
             fi
 
-            if [[ "$1" == "--$switch" ]]; then
+            if [[ "$1" == "--$switch" ]] || ([[ "$1" == "-$switch" ]] && [[ ${#switch} -eq 1 ]]); then
                 _found=true
                 if [[ $shifter -eq 0 ]]; then
-                    if [[  "$1" == "--$switch" ]]; then
-                        eval "$output_var=true"
-                    else
-                        eval "$output_var=false"
-                    fi
+                    eval "$output_var=true"
                 elif [[ $shifter -eq 1 ]]; then
                     eval "$output_var=$2"
                 elif [[ $shifter -eq -1 ]]; then
@@ -46,7 +42,7 @@ function arguments_parse {
 
                 shift $((shifter+1))
                 break
-            elif [[ $shifter -eq 0 ]] && [[ "$1" == --no-"$switch" ]]; then
+            elif [[ "$1" == --no-"$switch" ]] && [[ $shifter -eq 0 ]]; then
                 _found=true
                 eval "$output_var=false"
                 shift 1
