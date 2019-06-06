@@ -1,29 +1,24 @@
 #!/bin/bash
 
 __modules_imported=()
-
 _script_map=()
-__script_search_paths=()
-__custom_dirs=()
 
+function __build_search_paths {
+    IFS=$':' __custom_paths=("$(pwd)" $IGNITE_PATH $IGNITE_INSTALLATION)
+    unset IFS
 
-__custom_dirs=("$(pwd)")
+    IFS=$':' __env_paths=($PATH)
+    unset IFS
 
-IFS=$':' _custom_path=($IGNITE_PATH)
-unset IFS
-__custom_dirs+=("${_custom_path[@]}")
+    __combined_paths=("${__custom_paths[@]}" "${__env_paths[@]}")
+}
 
-__custom_dirs+=("$IGNITE_INSTALLATION")
-
-IFS=$':' _path=($PATH)
-unset IFS
-
-__script_search_paths=("${__custom_dirs[@]}")
-__script_search_paths+=("${_path[@]}")
 
 function search_scripts {
-    for p in "${__script_search_paths[@]}"; do
-        if `ls $p/ignite_* &> /dev/null`; then
+    __build_search_paths
+    _script_map=()
+    for p in "${__combined_paths[@]}"; do
+        if ls $p/ignite_* &> /dev/null; then
             for _match in `ls $p/ignite_*`; do
                 if [[ "$_match" == "$p/ignite_" ]]; then
                     continue
@@ -36,8 +31,17 @@ function search_scripts {
     done
 }
 
+function which_scripts {
+    search_scripts
+    for __script in "${_script_map[@]}"; do
+        __script=($__script)
+        echo "${__script[0]} -> ${__script[1]}"
+    done
+}
+
 function resolve_script {
-    for p in "${__script_search_paths[@]}"; do
+    __build_search_paths
+    for p in "${__combined_paths[@]}"; do
         if [ -f "$p/ignite_$1" ] || [ -L "$p/ignite_$1" ]; then
             echo "$p/ignite_$1"
             return 0
@@ -47,13 +51,14 @@ function resolve_script {
 }
 
 function import_module {
+    __build_search_paths
     for visited in ${__modules_imported[@]}; do
         if [[ $1 == $visited ]]; then
             return
         fi
     done
 
-    for dir in ${__custom_dirs[@]}; do
+    for dir in "${__custom_paths[@]}"; do
         if [ -f "$dir/modules/$1" ]; then
             . "$dir/modules/$1"
             __modules_imported+=("$1")
