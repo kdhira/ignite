@@ -40,7 +40,3 @@ function _add_symlink {
     ln -s "$(pwd)/ignite" "$_target_dir/ignite"
     print_success "Installed symlink to 'ignite' in $_target_dir"
 }
-
-function op_help {
-    return
-}
