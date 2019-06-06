@@ -2,8 +2,8 @@
 set -e
 IGNITE_INSTALLATION=${IGNITE_INSTALLATION:-$(dirname $(readlink $(which $0) || echo $(which $0)))}
 if [ ! -d "$IGNITE_INSTALLATION" ]; then
-    echo '\033[31mfatal: ignite incorrectly configured' >&2
-    echo '\033[31mfatal: $IGNITE_INSTALLATION variable does not reference an Ignite installation' >&2
+    echo -e '\033[31mfatal: Ignite incorrectly configured\033[0m' >&2
+    echo -e '\033[31mfatal: $IGNITE_INSTALLATION variable does not reference an Ignite installation\033[0m' >&2
     exit 1
 fi
 . $IGNITE_INSTALLATION/modules/import
