@@ -1,0 +1,10 @@
+#!/bin/bash
+
+function _commands_get {
+    typeset -f | grep -E '^op_.+ ()$' | sed 's/ ()//g' | sed 's/op_//g'
+}
+
+function op_commands {
+    _commands_get
+
+}

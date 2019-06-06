@@ -17,10 +17,7 @@ function _ignite_complete {
         }
         . "$_ignite_script_path"
 
-        for v in "${VALID_OPERATIONS[@]}"; do
-            v=($v)
-            COMPREPLY+=("${v[0]}")
-        done
+        COMPREPLY+=(`_commands_get`)
     fi
 }
 
