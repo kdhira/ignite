@@ -1,21 +1,71 @@
 #!/bin/bash
 
-__import_visited=()
+__modules_imported=()
+_script_map=()
+
+function __build_search_paths {
+    IFS=$':' __custom_paths=("$(pwd)" $IGNITE_PATH $IGNITE_INSTALLATION)
+    unset IFS
+
+    IFS=$':' __env_paths=($PATH)
+    unset IFS
+
+    __combined_paths=("${__custom_paths[@]}" "${__env_paths[@]}")
+}
+
+
+function search_scripts {
+    __build_search_paths
+    _script_map=()
+    for p in "${__combined_paths[@]}"; do
+        if ls $p/ignite_* &> /dev/null; then
+            for _match in `ls $p/ignite_*`; do
+                if [[ "$_match" == "$p/ignite_" ]]; then
+                    continue
+                fi
+                _prefix=$(echo "$p/ignite_" | sed 's/\//\\\//g')
+                _name=$(echo $_match | sed s/$_prefix//g)
+                _script_map+=("$_name $_match")
+            done
+        fi
+    done
+}
+
+function which_scripts {
+    search_scripts
+    for __script in "${_script_map[@]}"; do
+        __script=($__script)
+        echo "${__script[0]} -> ${__script[1]}"
+    done
+}
+
+function resolve_script {
+    __build_search_paths
+    for p in "${__combined_paths[@]}"; do
+        if [ -f "$p/ignite_$1" ] || [ -L "$p/ignite_$1" ]; then
+            echo "$p/ignite_$1"
+            return 0
+        fi
+    done
+    return 1
+}
 
 function import_module {
-    for visited in ${__import_visited[@]}; do
+    __build_search_paths
+    for visited in ${__modules_imported[@]}; do
         if [[ $1 == $visited ]]; then
             return
         fi
     done
 
-    module_path="$IGNITE_INSTALLATION/modules/$1"
+    for dir in "${__custom_paths[@]}"; do
+        if [ -f "$dir/modules/$1" ]; then
+            . "$dir/modules/$1"
+            __modules_imported+=("$1")
+            return
+        fi
+    done
 
-    if [ -f "$module_path" ]; then
-        . "$module_path"
-        __import_visited+=("$1")
-    else
-        echo "Ignite module '$1' does not exist" >&2
-        return 1
-    fi
+    echo "Could not find module $1 (check your \$IGNITE_PATH variable is set correctly and the module exists in the module/ subdirectory" >&2
+    return 1
 }

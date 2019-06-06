@@ -1,0 +1,42 @@
+#!/bin/bash
+
+import_module print
+import_module arguments
+arguments_config=(
+    "link-location link_dir 1"
+)
+
+function op_install {
+    arguments_parse $@
+    if [ $link_dir ]; then
+        _symlink_dir="$link_dir"
+    else
+        if [ -d "/Users/$(logname)" ]; then
+            _symlink_dir="/Users/$(logname)/bin"
+        else
+            _symlink_dir="/home/$(logname)/bin"
+        fi
+    fi
+    _add_symlink "$_symlink_dir"
+}
+
+function _add_symlink {
+    _target_dir="$1"
+
+    if [[ ! -d "$_target_dir" ]]; then
+        print_error "$_target_dir does not exist"
+        return
+    fi
+    if [[ "$PATH" != *"$_target_dir"* ]]; then
+        print_error "$_target_dir not in \$PATH"
+        return
+    fi
+    if [[ -e "$_target_dir/ignite" ]]; then
+        print_warning "$_target_dir/ignite already exists"
+        print_warning "Looks like Ignite is already installed"
+        return
+    fi
+
+    ln -s "$(pwd)/ignite" "$_target_dir/ignite"
+    print_success "Installed symlink to 'ignite' in $_target_dir"
+}

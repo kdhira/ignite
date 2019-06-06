@@ -33,6 +33,5 @@ function initialize_reactor {
             __reactor_pipeline $task
         }"
 
-        VALID_OPERATIONS+=("$task")
     done
 }

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+_ssh_hosts=()
+
+_ssh_push_files=()
+function ssh_push {
+    if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
+        print_error "No hosts to push to"
+        return 1
+    fi
+
+    if [[ ${#_ssh_push_files[@]} -eq 0 ]]; then
+        print_error "Nothing to push"
+        return 1
+    fi
+
+    for host in ${_ssh_hosts[@]}; do
+        print_warning "Uploading to $host"
+        if scp "${_ssh_push_files[@]}" "$host:"; then
+            print_success "Pushed files successfully to $host"
+        else
+            print_error "Failed to push files to $host"
+            return 1
+        fi
+    done
+}
+
+
+_ssh_execute_sudo=false
+_ssh_execute_command=":"
+_ssh_execute_continue_on_error=false
+function ssh_execute {
+    if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
+        print_error "No hosts to remote execute on"
+        return 1
+    fi
+
+    if [[ $_ssh_execute_sudo == true ]]; then
+        __sudo="sudo "
+    else
+        __sudo=
+    fi
+
+    for host in ${_ssh_hosts[@]}; do
+        print_warning "Executing '$__sudo$_ssh_execute_command' on $host"
+        if ssh $host -t $__sudo$_ssh_execute_command; then
+            print_success "Execution completed on $host"
+        else
+            print_error "Execution failed on $host"
+            if [[ $_ssh_execute_continue_on_error != true ]]; then
+                return 1
+            fi
+        fi
+    done
+}

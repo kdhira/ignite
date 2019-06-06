@@ -7,13 +7,6 @@ LATEST_VERSION='1.0.0-SNAPSHOT'
 
 VERSION=${VERSION:-$LATEST_VERSION}
 
-
-VALID_OPERATIONS=(
-    "info"
-    "install"
-)
-
-
 function op_info {
     echo -e "${GREEN_FG}Hi I am $APP_NAME@$VERSION${CLRT}"
 }

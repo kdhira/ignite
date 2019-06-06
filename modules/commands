@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function _commands_get {
+    # get all commands | find op_ commands | trim off brackets (zsh) | trim off brackets (other shells) | trim off op_ prefix
+    typeset -f | grep -E '^op_.+$' | sed 's/ () {//g' | sed 's/ ()//g' | sed 's/^op_//g'
+}
+
+function op_commands {
+    _commands_get
+
+}
