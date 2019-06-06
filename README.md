@@ -1,13 +1,11 @@
 # Ignite
-An extendable shell framework for task automation
+_An extendable shell framework for task automation_
 
 ## Simple Setup
-1. Configure execution of Ignite
-    - EITHER add this directory to your `$PATH`
-    ```
-    echo "export PATH=\"$(pwd):$PATH\"" >> .zshrc
-    ```
-    - OR Create a symbolic link to `ignite` to a directory that is in your `$PATH`
+1. Install Ignite:
+    1. `git checkout stable` (or `git checkout dev` for latest dev build)
+    2. `./ignite setup install`
+        - Add `--link-location <dir>` to the end if you want to install to a custom directory
 2. (Optional) Set up autocomplete
     - Add `source <path_to_clone>/autocomplete_ignite` to your chosen shell profile, eg
     ```
