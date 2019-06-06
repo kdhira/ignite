@@ -74,7 +74,7 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-. $IGNITE_INSTALLATION/_ignite_search
+
 _ignite_script_path=$(resolve_script $1) || {
     echo "Could not resolve script \"$1\""
     exit 2
