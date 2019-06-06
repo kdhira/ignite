@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# set -x
-
 # May need further improvements, see #1
 _complete_script_location=$(dirname $(readlink $_ || echo $_))
 . "$_complete_script_location/modules/import"
@@ -27,6 +25,3 @@ function _ignite_complete {
 }
 
 complete -F _ignite_complete -o default ignite
-
-
-set +x
