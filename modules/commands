@@ -1,0 +1,5 @@
+#!/bin/bash
+
+function op_commands {
+    typeset -f | grep -E '^op_.+ ()$' | sed 's/ ()//g' | sed 's/op_//g'
+}
