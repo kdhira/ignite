@@ -14,15 +14,12 @@ _ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 
 import_module print
 import_module colors
+import_module commands
 
 function usage {
-    if [[ "${#VALID_OPERATIONS[@]}" -eq 0 ]]; then
-        echo "No operations defined in ignite script" >&2
-        exit 1
-    fi
     echo "Usage:"
-    for op in "${VALID_OPERATIONS[@]}"; do
-        echo -e "\t$0 $_ignite_script_name $op"
+    for op in `_commands_get`; do
+        echo -e "\t$(basename $0) $_ignite_script_name $op"
     done
 }
 
@@ -35,11 +32,11 @@ function main {
     shift
 
     # See if implementation-defined operation
-    for op in "${VALID_OPERATIONS[@]}"; do
-        op=(${op[@]})
-        if [[ "$command" == "${op[0]}" ]]; then
+    for op in `_commands_get`; do
+        if [[ "$command" == "$op" ]]; then
+            SOURCE_PATH=${SOURCE_PATH:-"."}
             if [ ! -d "$SOURCE_PATH" ]; then
-                echo "$SOURCE_PATH does not exist" >&2
+                echo "Source path '$SOURCE_PATH' does not exist" >&2
                 exit 1
             fi
             cd $SOURCE_PATH
@@ -50,14 +47,12 @@ function main {
     done
     # Didnt hit a registered operation
     case "$command" in
-        help)
+        --help)
             usage
-            exit $?
             ;;
         *)
             echo "Unknown command '$command'"
             usage
-            exit 1
             ;;
     esac
 }
@@ -83,9 +78,6 @@ _ignite_script_name="$1"
 shift
 
 . "$_ignite_script_path"
-
-VALID_OPERATIONS=${VALID_OPERATIONS:-()}
-SOURCE_PATH=${SOURCE_PATH:-"."}
 
 # Execute main function
 main "$@"
