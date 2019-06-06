@@ -2,21 +2,21 @@
 
 # May need further improvements, see #1
 _complete_script_location=$(dirname $(readlink $_ || echo $_))
-. "$_complete_script_location/modules/import"
 function _ignite_complete {
+    . "$_complete_script_location/modules/import"
+    import_module commands
     COMPREPLY=()
-    if [[ ${#COMP_WORDS[@]} -eq 1 ]] || [[ ${#COMP_WORDS[@]} -eq 2 ]] && [[ ${COMP_CWORD} -eq 1 ]]; then
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
         search_scripts
         for s in "${_script_map[@]}"; do
             s=($s)
             COMPREPLY+=("${s[0]}")
         done
-    elif [[ ${#COMP_WORDS[@]} -eq 2 ]] || [[ ${#COMP_WORDS[@]} -eq 3 ]] && [[ ${COMP_CWORD} -eq 2 ]]; then
+    elif [[ ${COMP_CWORD} -eq 2 ]]; then
         _ignite_script_path=$(resolve_script ${COMP_WORDS[1]}) || {
             return
         }
         . "$_ignite_script_path"
-
         COMPREPLY+=(`_commands_get`)
     fi
 }
