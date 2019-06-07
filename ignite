@@ -1,18 +1,16 @@
 #!/bin/bash
 set -e
+
 IGNITE_INSTALLATION=${IGNITE_INSTALLATION:-$(dirname $(readlink $(which $0) || echo $(which $0)))}
 if [ ! -d "$IGNITE_INSTALLATION" ]; then
     echo -e '\033[31mfatal: Ignite incorrectly configured\033[0m' >&2
     echo -e '\033[31mfatal: $IGNITE_INSTALLATION variable does not reference an Ignite installation\033[0m' >&2
     exit 1
 fi
-. $IGNITE_INSTALLATION/modules/import
-_ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
-################################################################################
-# Behavoural
-################################################################################
 
+. $IGNITE_INSTALLATION/modules/import
 import_module commands
+_ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 
 function usage {
     echo "Usage:"
@@ -43,22 +41,19 @@ function main {
             exit $?
         fi
     done
-    # Didnt hit a registered operation
     case "$command" in
         --help)
             usage
+            exit 0
             ;;
         *)
             echo "Unknown command '$command'"
             usage
+            exit 128
             ;;
     esac
 }
 
-
-################################################################################
-# Functional
-################################################################################
 echo -e "\033[1mIgnite $_ignite_version - Kevin Hira\033[0m"
 echo $_ignite_version | grep -E -e '^v\d+\.\d+\.\d+$' &> /dev/null || echo -e "\033[33mDevelopment build detected... Execution may be unstable\033[0m"
 
@@ -66,7 +61,6 @@ if [[ $# -eq 0 ]]; then
     echo "Usage: $0 {script} {command}" >&2
     exit 1
 fi
-
 
 _ignite_script_path=$(resolve_script $1) || {
     echo "Could not resolve script \"$1\""
@@ -76,6 +70,4 @@ _ignite_script_name="$1"
 shift
 
 . "$_ignite_script_path"
-
-# Execute main function
 main "$@"
