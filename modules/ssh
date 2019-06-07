@@ -1,5 +1,7 @@
 #!/bin/bash
 
+import_module print
+
 _ssh_hosts=()
 
 _ssh_push_files=()

@@ -12,8 +12,6 @@ _ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 # Behavoural
 ################################################################################
 
-import_module print
-import_module colors
 import_module commands
 
 function usage {

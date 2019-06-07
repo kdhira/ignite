@@ -4,6 +4,8 @@ _puppet_module_location=${_puppet_module_location:-"."}
 _puppet_module_output_dir=${_puppet_module_output_dir:-"pkg"}
 _puppet_module_file=${_puppet_module_file}
 
+import_module print
+
 function _puppet_module_build {
     pushd $_puppet_module_location > /dev/null
     print_info "Building puppet module"
