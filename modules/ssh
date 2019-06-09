@@ -2,10 +2,9 @@
 
 import_module print
 
-_ssh_hosts=()
-
 _ssh_push_files=()
 function ssh_push {
+    local _ssh_hosts=("$@")
     if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
         print_error "No hosts to push to"
         return 1
@@ -27,25 +26,24 @@ function ssh_push {
     done
 }
 
-
-_ssh_execute_sudo=false
-_ssh_execute_command=":"
 _ssh_execute_continue_on_error=false
 function ssh_execute {
+    if [[ $# -lt 1 ]]; then
+        print_error "Nothing to run..." >&2
+        return 1
+    fi
+    local _ssh_command="$1"
+    shift
+
+    local _ssh_hosts=("$@")
     if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
         print_error "No hosts to remote execute on"
         return 1
     fi
 
-    if [[ $_ssh_execute_sudo == true ]]; then
-        __sudo="sudo "
-    else
-        __sudo=
-    fi
-
     for host in ${_ssh_hosts[@]}; do
-        print_warning "Executing '$__sudo$_ssh_execute_command' on $host"
-        if ssh $host -t $__sudo$_ssh_execute_command; then
+        print_warning "Executing '$_ssh_command' on $host"
+        if ssh $host -t $_ssh_command; then
             print_success "Execution completed on $host"
         else
             print_error "Execution failed on $host"
