@@ -24,6 +24,10 @@ function print_info {
     __log "${CYAN_FG}$@\n"
 }
 
+function print_out {
+    __log "$@\n"
+}
+
 function print_custom {
-    __log $@
+    __log "$@"
 }
