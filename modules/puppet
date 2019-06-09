@@ -21,6 +21,6 @@ function _puppet_module_build {
     popd > /dev/null
 }
 
-function _puppet_module_validate {
+function puppet_module_validate {
     return
 }
