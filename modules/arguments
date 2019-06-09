@@ -3,11 +3,15 @@
 # 1=switch (string)
 # 2=output_variable_name (string)
 # 3=shifter (int)
-arguments_config=()
+arguments_config=
 
 _arguments_allow_switchless=false
 
 function arguments_parse {
+    if [ ! $arguments_config ]; then
+        echo "\$argument_config not implemented" >&2
+        return 8
+    fi
     while [[ $# -gt 0 ]]; do
         _found=false
         for arg in "${arguments_config[@]}"; do
@@ -21,7 +25,7 @@ function arguments_parse {
                     _arguments_switchless=($@)
                     return
                 else
-                    error_invalid $1
+                    __error_invalid $1
                     return 1
                 fi
             fi
@@ -55,14 +59,14 @@ function arguments_parse {
                 _arguments_switchless=($@)
                 return
             else
-                error_invalid $1
+                __error_invalid $1
                 return 1
             fi
         fi
     done
 }
 
-function error_invalid {
+function __error_invalid {
     echo "Invalid argument $1" >&2
     return 1
 }
