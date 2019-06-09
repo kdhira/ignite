@@ -30,12 +30,6 @@ function main {
     # See if implementation-defined operation
     for op in `_commands_get`; do
         if [[ "$command" == "$op" ]]; then
-            SOURCE_PATH=${SOURCE_PATH:-"."}
-            if [ ! -d "$SOURCE_PATH" ]; then
-                echo "Source path '$SOURCE_PATH' does not exist" >&2
-                exit 1
-            fi
-            cd $SOURCE_PATH
             echo -e "\033[1mExecuting $_ignite_script_name->$command\033[0m"
             op_$command "$@"
             exit $?
