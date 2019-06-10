@@ -52,7 +52,13 @@ for switch in "${special_switches[@]}"; do
 done
 
 _ignite_script_path=$(resolve_script $1) || {
-    echo "Could not resolve script \"$1\""
+    if [[ "$1" == --* ]]; then
+        echo "Invalid argument $1" >&2
+        echo "Run '$(basename $0) --help' for valid arguments" >&2
+    else
+        echo "Could not resolve script \"$1\"" >&2
+        echo "Run '$(basename $0) --available' to find all available scripts" >&2
+    fi
     exit 2
 }
 _ignite_script_name="$1"
