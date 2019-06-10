@@ -1,15 +1,17 @@
 #!/bin/bash
 
+import_module print
+
 # 1=switch (string)
 # 2=output_variable_name (string)
 # 3=shifter (int)
-arguments_config=
+arguments_config=()
 
 _arguments_allow_switchless=false
 
 function arguments_parse {
-    if [ ! $arguments_config ]; then
-        echo "\$argument_config not implemented" >&2
+    if [[ ${#arguments_config[@]} -eq 0 ]]; then
+        echo "fatal: arguments_config not implemented" >&2
         return 8
     fi
     while [[ $# -gt 0 ]]; do
@@ -34,17 +36,25 @@ function arguments_parse {
                 _found=true
                 if [[ $shifter -eq 0 ]]; then
                     eval "$output_var=true"
+                    shift 1
                 elif [[ $shifter -eq 1 ]]; then
-                    eval "$output_var=$2"
-                elif [[ $shifter -eq -1 ]]; then
-                    shifter=$#
-                    shifter=$((shifter-1))
-                    eval "$output_var=(\"${@:2}\")"
+                    eval "$output_var+=(\"$2\")"
+                    shift 2
                 else
-                    eval "$output_var=(\"${@:2:$shifter}\")"
+                    if [[ $shifter -eq -1 ]]; then
+                        shifter=$#
+                        shifter=$((shifter-1))
+                    fi
+                    user_switch="$1"
+                    shift
+                    for ((i=0; i<shifter; i++)) {
+                        if [[ $# -eq 0 ]]; then
+                            print_error "Expected more values for $user_switch" >&2
+                        fi
+                        eval "$output_var+=(\"$1\")"
+                        shift
+                    }
                 fi
-
-                shift $((shifter+1))
                 break
             elif [[ "$1" == --no-"$switch" ]] && [[ $shifter -eq 0 ]]; then
                 _found=true
