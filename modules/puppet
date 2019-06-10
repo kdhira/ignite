@@ -10,7 +10,7 @@ function puppet_module_build {
     pushd $_puppet_module_location > /dev/null
     print_info "Building puppet module"
 
-    _puppet_module_validate
+    puppet_module_validate
 
     bundle exec puppet module build --modulepath .
     if [ ! -f "$_puppet_module_output_dir/$_puppet_module_file" ]; then
