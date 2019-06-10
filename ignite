@@ -22,10 +22,34 @@ function script_usage {
 echo -e "\033[1mIgnite $_ignite_version - Kevin Hira ($(date "+%b %Y"))\033[0m"
 echo $_ignite_version | grep -E -e '^v\d+\.\d+\.\d+$' &> /dev/null || echo -e "\033[33mDevelopment build detected... Execution may be unstable\033[0m"
 
+special_switches=(
+    "--available which_scripts"
+    "--whereis resolve_script \$2"
+    "--help ignite_usage"
+)
+
+function ignite_usage {
+    echo "Usage:"
+    echo "    $(basename $0) <script_name> <command> [command-arguments..]"
+    echo "    $(basename $0) --available"
+    echo "    $(basename $0) --whereis <script_name>"
+    echo "    $(basename $0) --help"
+
+}
+
 if [[ $# -eq 0 ]]; then
-    echo "Usage: $0 {script} {command}" >&2
+    ignite_usage >&2
     exit 1
 fi
+
+
+for switch in "${special_switches[@]}"; do
+    switch=($switch)
+    if [[ "$1" == "${switch[0]}" ]]; then
+        eval ${switch[@]:1}
+        exit $?
+    fi
+done
 
 _ignite_script_path=$(resolve_script $1) || {
     echo "Could not resolve script \"$1\""
