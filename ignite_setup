@@ -7,7 +7,7 @@ arguments_config=(
 )
 
 function op_install {
-    arguments_parse $@
+    arguments_parse "$@"
     if [ $link_dir ]; then
         _symlink_dir="$link_dir"
     else
