@@ -80,3 +80,50 @@ function __error_invalid {
     echo "Invalid argument $1" >&2
     return 1
 }
+
+function arguments_print {
+    local buffer=""
+    local mandatory_args=""
+    for arg in "${arguments_config[@]}"; do
+        a=($arg)
+        switch="${a[0]}"
+        output_var="${a[1]}"
+        shifter="${a[2]}"
+        mandatory="${a[3]}"
+        description="${a[@]:4}"
+
+        local argument_switch=""
+        local dashes="--"
+        if [[ ${#switch} -eq 1 ]]; then
+            dashes="-"
+        fi
+
+        argument_switch+="${dashes}${switch}"
+
+        local argument_params=""
+        if [[ $shifter -eq 0 ]]; then
+            argument_switch+="|--no-${switch}"
+        elif [[ $shifter -gt 0 ]]; then
+            for ((i=0;i<shifter;i++)) {
+                argument_params+=" <val$((i+1))>"
+            }
+        else
+            argument_params=" [vals...]"
+        fi
+
+        local definition_line="${argument_switch}${argument_params}"
+        if [[ $mandatory == true ]]; then
+            mandatory_args+=" $definition_line"
+        fi
+
+        if [ -z "$description" ]; then
+            description="[no info for ${dashes}${switch}]"
+        fi
+        local description_line=$'\n'"  $description"
+
+        buffer+="${definition_line}${description_line}"$'\n'
+        buffer+=$'\n'
+    done
+
+    echo "Usage: ignite $_ignite_script_name ${_ignite_command}${mandatory_args}"$'\n\n'"$buffer"
+}
