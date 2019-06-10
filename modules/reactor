@@ -2,36 +2,56 @@
 
 _reactor_tasks=()
 _reactor_chain=()
+_reactor_skip_list=()
+
+import_module arguments
+import_module print
 
 function _reactor_start {
     return
 }
 
 function __reactor_pipeline {
-    if [[ $_reactor_dependency_override != true ]]; then
-        for visited in ${__pipeline_visited[@]}; do
-            if [[ $2 == $visited ]]; then
-                return
-            fi
-        done
-        for r in "${_reactor_chain[@]}"; do
-            reactor_dependency=($r)
-            if [[ $1 == ${reactor_dependency[0]} ]]; then
-                __reactor_pipeline ${reactor_dependency[1]}
-            fi
-        done
+    if [[ ${_reactor_skip_list[@]} == *$1* ]]; then
+        print_out "${BOLDT}Reactor Skipping:${CLRT} $1"
+        return
     fi
+    for visited in ${__pipeline_visited[@]}; do
+        if [[ $1 == $visited ]]; then
+            return
+        fi
+    done
+    for r in "${_reactor_chain[@]}"; do
+        reactor_dependency=($r)
+        if [[ $1 == ${reactor_dependency[0]} ]]; then
+        print_out "${BOLDT}Reactor Dependency:${CLRT} ${reactor_dependency[1]}"
+            __reactor_pipeline ${reactor_dependency[1]}
+        fi
+    done
 
+    print_out "${BOLDT}Reactor Running:${CLRT} $1"
     reactor_$1
     __pipeline_visited+=($1)
+}
+
+function __reactor_pre_process {
+    arguments_config=(
+        "x _reactor_skip_list 1"
+        "${arguments_config[@]}"
+    )
+}
+
+function __reactor_post_process {
+    return
 }
 
 function initialize_reactor {
     for task in ${_reactor_tasks[@]}; do
         eval "function op_$task {
+            __reactor_pre_process
             _reactor_start $task "'$@'"
             __reactor_pipeline $task
+            __reactor_post_process
         }"
-
     done
 }

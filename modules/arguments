@@ -1,5 +1,7 @@
 #!/bin/bash
 
+import_module print
+
 # 1=switch (string)
 # 2=output_variable_name (string)
 # 3=shifter (int)
@@ -8,6 +10,10 @@ arguments_config=()
 _arguments_allow_switchless=false
 
 function arguments_parse {
+    if [[ ${#arguments_config[@]} -eq 0 ]]; then
+        echo "fatal: arguments_config not implemented" >&2
+        return 8
+    fi
     while [[ $# -gt 0 ]]; do
         _found=false
         for arg in "${arguments_config[@]}"; do
@@ -21,7 +27,7 @@ function arguments_parse {
                     _arguments_switchless=($@)
                     return
                 else
-                    error_invalid $1
+                    __error_invalid $1
                     return 1
                 fi
             fi
@@ -30,17 +36,25 @@ function arguments_parse {
                 _found=true
                 if [[ $shifter -eq 0 ]]; then
                     eval "$output_var=true"
+                    shift 1
                 elif [[ $shifter -eq 1 ]]; then
-                    eval "$output_var=$2"
-                elif [[ $shifter -eq -1 ]]; then
-                    shifter=$#
-                    shifter=$((shifter-1))
-                    eval "$output_var=(\"${@:2}\")"
+                    eval "$output_var+=(\"$2\")"
+                    shift 2
                 else
-                    eval "$output_var=(\"${@:2:$shifter}\")"
+                    if [[ $shifter -eq -1 ]]; then
+                        shifter=$#
+                        shifter=$((shifter-1))
+                    fi
+                    user_switch="$1"
+                    shift
+                    for ((i=0; i<shifter; i++)) {
+                        if [[ $# -eq 0 ]]; then
+                            print_error "Expected more values for $user_switch" >&2
+                        fi
+                        eval "$output_var+=(\"$1\")"
+                        shift
+                    }
                 fi
-
-                shift $((shifter+1))
                 break
             elif [[ "$1" == --no-"$switch" ]] && [[ $shifter -eq 0 ]]; then
                 _found=true
@@ -55,14 +69,61 @@ function arguments_parse {
                 _arguments_switchless=($@)
                 return
             else
-                error_invalid $1
+                __error_invalid $1
                 return 1
             fi
         fi
     done
 }
 
-function error_invalid {
+function __error_invalid {
     echo "Invalid argument $1" >&2
     return 1
+}
+
+function arguments_print {
+    local buffer=""
+    local mandatory_args=""
+    for arg in "${arguments_config[@]}"; do
+        a=($arg)
+        switch="${a[0]}"
+        output_var="${a[1]}"
+        shifter="${a[2]}"
+        mandatory="${a[3]}"
+        description="${a[@]:4}"
+
+        local argument_switch=""
+        local dashes="--"
+        if [[ ${#switch} -eq 1 ]]; then
+            dashes="-"
+        fi
+
+        argument_switch+="${dashes}${switch}"
+
+        local argument_params=""
+        if [[ $shifter -eq 0 ]]; then
+            argument_switch+="|--no-${switch}"
+        elif [[ $shifter -gt 0 ]]; then
+            for ((i=0;i<shifter;i++)) {
+                argument_params+=" <val$((i+1))>"
+            }
+        else
+            argument_params=" [vals...]"
+        fi
+
+        local definition_line="${argument_switch}${argument_params}"
+        if [[ $mandatory == true ]]; then
+            mandatory_args+=" $definition_line"
+        fi
+
+        if [ -z "$description" ]; then
+            description="[no info for ${dashes}${switch}]"
+        fi
+        local description_line=$'\n'"  $description"
+
+        buffer+="${definition_line}${description_line}"$'\n'
+        buffer+=$'\n'
+    done
+
+    echo "Usage: ignite $_ignite_script_name ${_ignite_command}${mandatory_args}"$'\n\n'"$buffer"
 }
