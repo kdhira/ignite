@@ -12,10 +12,10 @@ fi
 import_module commands
 _ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 
-function usage {
+function script_usage {
     echo "Usage:"
     for op in `_commands_get`; do
-        echo -e "\t$(basename $0) $_ignite_script_name $op"
+        echo -e "   $(basename $0) $_ignite_script_name $op"
     done
 }
 
@@ -37,7 +37,7 @@ shift
 . "$_ignite_script_path"
 
 if [[ $# -eq 0 ]] || [ -z "$1" ]; then
-    usage
+    script_usage
     exit 1
 fi
 command="$1"
@@ -53,12 +53,11 @@ for op in `_commands_get`; do
 done
 case "$command" in
     --help)
-        usage
+        script_usage
         exit 0
         ;;
     *)
-        echo "Unknown command '$command'"
-        usage
+        script_usage
         exit 128
         ;;
 esac
