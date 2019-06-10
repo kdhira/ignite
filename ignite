@@ -40,23 +40,24 @@ if [[ $# -eq 0 ]] || [ -z "$1" ]; then
     script_usage
     exit 1
 fi
-command="$1"
+_ignite_command="$1"
 shift
 
 
 for op in `_commands_get`; do
-    if [[ "$command" == "$op" ]]; then
-        echo -e "\033[1mExecuting $_ignite_script_name->$command\033[0m"
-        op_$command "$@"
+    if [[ "$_ignite_command" == "$op" ]]; then
+        echo -e "\033[1mExecuting $_ignite_script_name->$_ignite_command\033[0m"
+        op_$_ignite_command "$@"
         exit $?
     fi
 done
-case "$command" in
+case "$_ignite_command" in
     --help)
         script_usage
         exit 0
         ;;
     *)
+        echo "Unknown command '$_ignite_command'"
         script_usage
         exit 128
         ;;
