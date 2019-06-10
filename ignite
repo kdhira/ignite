@@ -51,7 +51,7 @@ for switch in "${special_switches[@]}"; do
     fi
 done
 
-_ignite_script_path=$(resolve_script $1) || {
+_ignite_script_path=$(resolve_script $1 2> /dev/null) || {
     if [[ "$1" == --* ]]; then
         echo "Invalid argument $1" >&2
         echo "Run '$(basename $0) --help' for valid arguments" >&2
