@@ -47,6 +47,8 @@ function resolve_script {
             return 0
         fi
     done
+
+    echo "Could not resolve '$1'" >&2
     return 1
 }
 
