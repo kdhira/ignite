@@ -19,7 +19,7 @@ function usage {
     done
 }
 
-echo -e "\033[1mIgnite $_ignite_version - Kevin Hira\033[0m"
+echo -e "\033[1mIgnite $_ignite_version - Kevin Hira ($(date "+%b %Y"))\033[0m"
 echo $_ignite_version | grep -E -e '^v\d+\.\d+\.\d+$' &> /dev/null || echo -e "\033[33mDevelopment build detected... Execution may be unstable\033[0m"
 
 if [[ $# -eq 0 ]]; then
