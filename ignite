@@ -10,6 +10,8 @@ fi
 
 . $IGNITE_INSTALLATION/modules/import
 import_module commands
+import_module print
+
 _ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 
 function script_usage {
@@ -22,34 +24,45 @@ function script_usage {
 echo -e "\033[1mIgnite $_ignite_version - Kevin Hira ($(date "+%b %Y"))\033[0m"
 echo $_ignite_version | grep -E -e '^v\d+\.\d+\.\d+$' &> /dev/null || echo -e "\033[33mDevelopment build detected... Execution may be unstable\033[0m"
 
-special_switches=(
-    "--available which_scripts"
-    "--whereis resolve_script \$2"
-    "--help ignite_usage"
+__special_switches=(
+    "--debug IGNITE_DEBUG=true && shift"
+    "--available which_scripts && exit \$?"
+    "--whereis resolve_script \$2 && exit \$?"
+    "--help ignite_usage && exit \$?"
 )
 
 function ignite_usage {
     echo "Usage:"
-    echo "    $(basename $0) <script_name> <command> [command-arguments..]"
+    echo "    $(basename $0) [--debug] <script_name> <command> [command-arguments..]"
     echo "    $(basename $0) --available"
     echo "    $(basename $0) --whereis <script_name>"
     echo "    $(basename $0) --help"
 
 }
 
+while [[ $# -gt 0 ]]; do
+    __found_switch=false
+    for switch in "${__special_switches[@]}"; do
+        switch=($switch)
+        if [[ "$1" == "${switch[0]}" ]]; then
+            eval ${switch[@]:1}
+            __found_switch=true
+            break
+        fi
+    done
+
+    if [[ $__found_switch == false ]]; then
+        break
+    fi
+done
+
+if [[ $IGNITE_DEBUG == true ]]; then
+    print_debug "Debug logging is enabled..."
+fi
 if [[ $# -eq 0 ]]; then
     ignite_usage >&2
     exit 1
 fi
-
-
-for switch in "${special_switches[@]}"; do
-    switch=($switch)
-    if [[ "$1" == "${switch[0]}" ]]; then
-        eval ${switch[@]:1}
-        exit $?
-    fi
-done
 
 _ignite_script_path=$(resolve_script $1 2> /dev/null) || {
     if [[ "$1" == --* ]]; then
@@ -66,10 +79,6 @@ shift
 
 . "$_ignite_script_path"
 
-if [[ $# -eq 0 ]] || [ -z "$1" ]; then
-    script_usage
-    exit 1
-fi
 _ignite_command="$1"
 shift
 
