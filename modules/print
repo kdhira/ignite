@@ -24,6 +24,12 @@ function print_info {
     __log "${CYAN_FG}$@\n"
 }
 
+function print_debug {
+    if [[ $IGNITE_DEBUG == true ]]; then
+        __log "\033[2m$@\n"
+    fi
+}
+
 function print_out {
     __log "$@\n"
 }
