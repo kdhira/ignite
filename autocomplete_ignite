@@ -1,24 +1,93 @@
 #!/bin/bash
 
+__switches=(
+    "--available"
+    "--debug"
+    "--help"
+    "--whereis"
+)
+__switch_sink_map=(
+    "--available"
+    "--help"
+    "--whereis"
+)
+
 # May need further improvements, see #1
 _complete_script_location=$(dirname $(readlink $_ || echo $_))
 function _ignite_complete {
     . "$_complete_script_location/modules/import"
     import_module commands
-    COMPREPLY=()
-    if [[ ${COMP_CWORD} -eq 1 ]]; then
-        search_scripts
-        for s in "${_script_map[@]}"; do
-            s=($s)
-            COMPREPLY+=("${s[0]}")
-        done
-    elif [[ ${COMP_CWORD} -eq 2 ]]; then
-        _ignite_script_path=$(resolve_script ${COMP_WORDS[1]}) || {
-            return
-        }
-        . "$_ignite_script_path"
-        COMPREPLY+=(`_commands_get`)
+
+    get_state
+
+    if [[ $seen_script == true ]]; then
+        if [[ $command_entered != true ]]; then
+            add_commands
+        fi
+    else
+        if [[ $switch_sink != true ]]; then
+            add_scripts
+            add_switches
+        fi
     fi
+}
+
+function get_state {
+    seen_script=false
+    script_last=false
+    command_entered=false
+    switch_sink=false
+
+    for ((i=0; i<${#COMP_WORDS[@]:1}; i++)) {
+        local word=${COMP_WORDS[$((i+1))]}
+        if [[ $script_last == true ]]; then
+            script_last=false
+            if [[ $((i+1)) -lt ${#COMP_WORDS[@]:1} ]]; then
+                command_entered=true
+            fi
+            return
+        fi
+        if is_in_list "$word" ${__switch_sink_map[@]}; then
+            switch_sink=true
+            return
+        elif [[ "$word" != --* ]] && _ignite_script_path=$(resolve_script "$word" 2>/dev/null); then
+            . "$_ignite_script_path"
+            seen_script=true
+            script_last=true
+        fi
+    }
+}
+
+function add_scripts {
+    search_scripts
+    for script in "${_script_map[@]}"; do
+        script=($script)
+        COMPREPLY+=("${script[0]}")
+    done
+}
+
+function add_switches {
+    for switch in "${__switches[@]}"; do
+        switch=($switch)
+        COMPREPLY+=("${switch[0]}")
+    done
+}
+
+function add_commands {
+    COMPREPLY+=(`_commands_get`)
+}
+
+function is_in_list {
+    local subject="$1"
+    shift
+
+    for item in "$@"; do
+        if [[ "$item" == "$subject" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
 }
 
 complete -F _ignite_complete -o default ignite
