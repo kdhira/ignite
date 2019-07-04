@@ -1,18 +1,21 @@
 #!/bin/bash
 
 import_module print
+import_module define
 
 # 1=switch (string)
 # 2=output_variable_name (string)
 # 3=shifter (int)
-__arguments_config=()
+# 4=is_mandatory (boolean) [optional]
+# 5=description (string) [optional]
+arguments_config=()
 
 _arguments_allow_switchless=false
 
 function arguments_parse {
-    local arg_var=$1
+    local __arguments_config=
+    define_list __arguments_config $1
     shift
-    eval "local __arguments_config=(\"\${$arg_var[@]}\")"
 
     if [[ ${#__arguments_config[@]} -eq 0 ]]; then
         echo "fatal: $arg_var not set" >&2
@@ -86,9 +89,9 @@ function __error_invalid {
 }
 
 function arguments_print {
-    local arg_var=$1
+    local __arguments_config=
+    define_list __arguments_config $1
     shift
-    eval "local __arguments_config=(\"\${$arg_var[@]}\")"
 
     local buffer=""
     local mandatory_args=""
