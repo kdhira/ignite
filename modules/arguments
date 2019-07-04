@@ -5,18 +5,22 @@ import_module print
 # 1=switch (string)
 # 2=output_variable_name (string)
 # 3=shifter (int)
-arguments_config=()
+__arguments_config=()
 
 _arguments_allow_switchless=false
 
 function arguments_parse {
-    if [[ ${#arguments_config[@]} -eq 0 ]]; then
-        echo "fatal: arguments_config not implemented" >&2
+    local arg_var=$1
+    shift
+    eval "local __arguments_config=(\"\${$arg_var[@]}\")"
+
+    if [[ ${#__arguments_config[@]} -eq 0 ]]; then
+        echo "fatal: $arg_var not set" >&2
         return 8
     fi
     while [[ $# -gt 0 ]]; do
         _found=false
-        for arg in "${arguments_config[@]}"; do
+        for arg in "${__arguments_config[@]}"; do
             a=($arg)
             switch="${a[0]}"
             output_var="${a[1]}"
@@ -82,9 +86,13 @@ function __error_invalid {
 }
 
 function arguments_print {
+    local arg_var=$1
+    shift
+    eval "local __arguments_config=(\"\${$arg_var[@]}\")"
+
     local buffer=""
     local mandatory_args=""
-    for arg in "${arguments_config[@]}"; do
+    for arg in "${__arguments_config[@]}"; do
         a=($arg)
         switch="${a[0]}"
         output_var="${a[1]}"
