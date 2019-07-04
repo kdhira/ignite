@@ -6,8 +6,10 @@ import_module define
 function ssh_push {
     local _ssh_push_files
     define_list _ssh_push_files $1
+
     local _ssh_hosts
     define_list _ssh_hosts $2
+
     shift 2
 
     if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
@@ -34,8 +36,10 @@ function ssh_push {
 _ssh_execute_continue_on_error=false
 function ssh_execute {
     local _ssh_command="$1"
+
     local _ssh_hosts
     define_list _ssh_hosts $2
+
     shift 2
 
     if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
@@ -54,4 +58,53 @@ function ssh_execute {
             fi
         fi
     done
+}
+
+function ssh_pull_file {
+    local remote_file="$1"
+    local file_name="$(basename $remote_file)"
+
+    local _ssh_hosts
+    define_list _ssh_hosts $2
+
+    shift 2
+
+    if [[ ${#_ssh_hosts[@]} -eq 0 ]]; then
+        print_error "No hosts to push to"
+        return 1
+    fi
+
+    local tempdir="$(mktemp -d /tmp/ignite-ssh-pull_file-XXXXX)"
+    pushd $tempdir >/dev/null
+    print_debug "Moved to temp directory $tempdir"
+
+    for host in ${_ssh_hosts[@]}; do
+        print_warning "Downloading from $host"
+        mkdir $host
+        if scp -r "$host:$remote_file" "$host/$file_name"; then
+            print_success "Downloaded successfully from $host"
+        else
+            print_error "Failed to download from $host"
+            if ls * 2> /dev/null; then
+                local tar_name="$(_ssh_tar_up)"
+                popd > /dev/null
+                cp $tempdir/$tar_name .
+                rm -rf $tempdir
+                print_warning "Files downloaded to $tar_name"
+            fi
+            return 1
+        fi
+    done
+
+    local tar_name="$(_ssh_tar_up)"
+    popd > /dev/null
+    cp $tempdir/$tar_name .
+    rm -rf $tempdir
+    print_success "Files downloaded to $tar_name"
+}
+
+function _ssh_tar_up {
+    local tar_name="ignite-files-$(date +%Y%m%d%H%M%S).tar.gz"
+    tar czf "$tar_name" *
+    echo $tar_name
 }
