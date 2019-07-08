@@ -11,6 +11,7 @@ fi
 . $IGNITE_INSTALLATION/modules/import
 import_module commands
 import_module print
+import_module script_validate
 
 _ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 
@@ -78,6 +79,10 @@ _ignite_script_name="$1"
 shift
 
 . "$_ignite_script_path"
+
+if ! is_script_valid; then
+    exit 16
+fi
 
 _ignite_command="$1"
 shift

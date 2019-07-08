@@ -1,0 +1,18 @@
+#!/bin/bash
+
+import_module print
+
+
+function script_validate {
+    return
+}
+
+function is_script_valid {
+    print_debug "Validating script..."
+    if script_validate; then
+        print_debug "Script is valid"
+    else
+        print_error "Script not valid"
+        return 1
+    fi
+}
