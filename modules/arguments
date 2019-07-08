@@ -15,12 +15,13 @@ _arguments_allow_switchless=false
 function arguments_parse {
     local __arguments_config=
     define_list __arguments_config $1
-    shift
 
     if [[ ${#__arguments_config[@]} -eq 0 ]]; then
-        echo "fatal: $arg_var not set" >&2
+        echo "fatal: $1 not set" >&2
         return 8
     fi
+    shift
+
     while [[ $# -gt 0 ]]; do
         _found=false
         for arg in "${__arguments_config[@]}"; do
