@@ -4,6 +4,7 @@ __switches=(
     "--available"
     "--debug"
     "--help"
+    "--trace"
     "--whereis"
 )
 __switch_sink_map=(
