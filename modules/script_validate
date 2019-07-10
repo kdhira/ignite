@@ -1,0 +1,19 @@
+#!/bin/bash
+
+import_module print
+
+
+function script_validate {
+    print_debug "No custom script_validate function implementation..."
+    return
+}
+
+function is_script_valid {
+    print_debug "Validating script..."
+    if script_validate; then
+        print_debug "Script validation passed"
+    else
+        print_error "Script validation failed"
+        return 1
+    fi
+}
