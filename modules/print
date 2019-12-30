@@ -5,29 +5,39 @@ import_module colors
 # TODO: Improve implementation
 
 function __log {
+    echo -en "$@${CLRT}\n"
+}
+
+function __log_no_nl {
     echo -en "$@${CLRT}"
 }
 
 function print_warning {
-    __log "${YELLOW_FG}$@\n"
+    __log "${YELLOW_FG}$@"
 }
 
 function print_error {
-    __log "${RED_FG}$@\n"
+    __log "${RED_FG}$@"
 }
 
 function print_success {
-    __log "${GREEN_FG}$@\n"
+    __log "${GREEN_FG}$@"
 }
 
 function print_info {
-    __log "${CYAN_FG}$@\n"
+    __log "${CYAN_FG}$@"
+}
+
+function print_debug {
+    if [[ $IGNITE_DEBUG == true ]]; then
+        __log "\033[2m$@"
+    fi
 }
 
 function print_out {
-    __log "$@\n"
+    __log "$@"
 }
 
 function print_custom {
-    __log "$@"
+    __log_no_nl "$@"
 }

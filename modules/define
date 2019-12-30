@@ -1,0 +1,14 @@
+#!/bin/bash
+
+import_module print
+
+function define_list {
+    dest_var="$1"
+    shift
+
+    eval "$dest_var=()"
+    for i in $@; do
+        source_var="$i"
+        eval "$dest_var+=(\"\${$source_var[@]}\")"
+    done
+}
