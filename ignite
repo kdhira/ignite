@@ -85,6 +85,12 @@ if ! is_script_valid; then
     exit 16
 fi
 
+if [[ $# -eq 0 ]]; then
+    print_error "No command specified"
+    script_usage
+    exit 1
+fi
+
 _ignite_command="$1"
 shift
 
@@ -100,13 +106,14 @@ for op in `_commands_get`; do
         exit $?
     fi
 done
+print_warning "not a command"
 case "$_ignite_command" in
     --help)
         script_usage
         exit 0
         ;;
     *)
-        echo "Unknown command '$_ignite_command'"
+        print_error "Unknown command '$_ignite_command'"
         script_usage
         exit 128
         ;;
