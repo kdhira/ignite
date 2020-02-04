@@ -106,7 +106,7 @@ for op in `_commands_get`; do
         exit $?
     fi
 done
-print_warning "not a command"
+
 case "$_ignite_command" in
     --help)
         script_usage
