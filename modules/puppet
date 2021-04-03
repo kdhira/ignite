@@ -12,7 +12,7 @@ function puppet_module_build {
 
     puppet_module_validate
 
-    bundle exec puppet module build --modulepath .
+    rbenv exec bundle exec puppet module build --modulepath .
     if [ ! -f "$_puppet_module_output_dir/$_puppet_module_file" ]; then
         print_error "Module build reported successful, but build artifact does not exist"
         return 1
