@@ -2,6 +2,7 @@
 set -e
 
 IGNITE_INSTALLATION=${IGNITE_INSTALLATION:-$(dirname $(readlink $(which $0) || echo $(which $0)))}
+IGNITE_EDITOR=${IGNITE_EDITOR:-"code"}
 if [ ! -d "$IGNITE_INSTALLATION" ]; then
     echo -e '\033[31mfatal: Ignite incorrectly configured\033[0m' >&2
     echo -e '\033[31mfatal: $IGNITE_INSTALLATION variable does not reference an Ignite installation\033[0m' >&2
@@ -16,9 +17,15 @@ import_module script_validate
 _ignite_version=$(cat $IGNITE_INSTALLATION/VERSION)
 
 function script_usage {
-    echo "Usage:"
+    echo "Display this help:"
+    echo "  $(basename $0) $_ignite_script_name --help"
+    echo
+    echo "Edit this script:"
+    echo "  $(basename $0) $_ignite_script_name --edit"
+    echo
+    echo "Available script commands:"
     for op in `_commands_get`; do
-        echo -e "   $(basename $0) $_ignite_script_name $op"
+        echo -e "  $(basename $0) $_ignite_script_name $op"
     done
 }
 
@@ -31,13 +38,22 @@ __special_switches=(
     "--available which_scripts && exit \$?"
     "--whereis resolve_script \$2 && exit \$?"
     "--help ignite_usage && exit \$?"
+    "--dev ignite_dev && exit \$?"
 )
+
+function ignite_dev {
+    print_success "Opening using $IGNITE_EDITOR: $IGNITE_INSTALLATION"
+    $IGNITE_EDITOR $IGNITE_INSTALLATION
+    return 0
+}
 
 function ignite_usage {
     echo "Usage:"
-    echo "    $(basename $0) [--debug] <script_name> <command> [command-arguments..]"
+    echo "    $(basename $0) [--debug] [--trace] <script_name> <command> [command-arguments..]"
+    echo "    $(basename $0) [--debug] [--trace] <script_name> ( --edit | --help )"
     echo "    $(basename $0) --available"
     echo "    $(basename $0) --whereis <script_name>"
+    echo "    $(basename $0) --dev"
     echo "    $(basename $0) --help"
 
 }
@@ -110,6 +126,12 @@ done
 case "$_ignite_command" in
     --help)
         script_usage
+        exit 0
+        ;;
+    --edit)
+        print_info "Opening using $IGNITE_EDITOR: $_ignite_script_path"
+        $IGNITE_EDITOR "$(dirname $_ignite_script_path)" "$_ignite_script_path"
+        print_success "Done"
         exit 0
         ;;
     *)
